@@ -67,10 +67,15 @@ jobs:
           script: |
             set -e
             IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/devopsstudy:latest
-            docker pull $IMAGE
-            docker stop devopsstudy || true
-            docker rm devopsstudy || true
-            docker run -d \
+            if ! command -v docker >/dev/null 2>&1; then
+              echo "docker not found on target host" >&2
+              exit 2
+            fi
+            # Use sudo; ensure the remote user has passwordless sudo for docker commands
+            sudo docker pull $IMAGE
+            sudo docker stop devopsstudy || true
+            sudo docker rm devopsstudy || true
+            sudo docker run -d \
               --name devopsstudy \
               -p 8080:8080 \
               --restart unless-stopped \
